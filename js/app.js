@@ -2,6 +2,12 @@
   const params = new URLSearchParams(location.search);
   // 주소 끝을 지우고 들어와도 실험 시작 화면으로 가게 해요.
   if (!params.has('cond') && window.parent === window) { location.replace('study.html'); return; }
+  // 브라우저 뒤로 가기로 이전 과업의 화면이 열리면, 내용을 그리기 전에 지금 과업 화면으로 돌려보내요.
+  if (window.parent !== window && params.has('run')) {
+    let now = null;
+    try { now = window.parent.__etlCurrent; } catch (e) { now = null; }
+    if (now && now.run !== params.get('run')) { location.replace(now.url); return; }
+  }
   const cond = params.get('cond') === 'B' ? 'B' : 'A';
   const review = params.get('review') === '1';
   const setKey = ['X', 'Y', 'Z'].includes(params.get('set')) ? params.get('set') : 'X';

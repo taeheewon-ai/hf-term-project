@@ -269,7 +269,10 @@
     frameReady = false;
     startWanted = false;
     active = null;
-    frame.src = `${url}&run=${encodeURIComponent(currentRun)}#/`;
+    const taskUrl = `${url}&run=${encodeURIComponent(currentRun)}#/`;
+    // 브라우저 뒤로 가기로 이전 과업이 열려도 eTL 화면이 지금 과업으로 돌아오게, 지금 주소를 알려 둬요.
+    window.__etlCurrent = { run: currentRun, url: taskUrl };
+    frame.src = taskUrl;
     cover.className = 'cover is-on';
     cover.innerHTML = `<div class="card">
       <div class="card__bar">${esc(label)} ${i + 1} / ${total}</div>
@@ -444,7 +447,7 @@
 
   const buildFiles = () => {
     const sheet1 = [['참가자 ID', '배정 조합', '조건', '과업', '정답(T2)', '시간(초)', '클릭 수', '복귀 횟수', '착수 일수(T3)']];
-    const sheet2 = [['참가자 ID', '조건', '체감 부담(1–7)', 'NASA-TLX(0–100)', 'SUS(0–100)', '마감 준수 가능성(1–7)', '서술형 응답']];
+    const sheet2 = [['참가자 ID', '조건', '체감 부담(1~7)', 'NASA-TLX(0~100)', 'SUS(0~100)', '마감 준수 가능성(1~7)', '서술형 응답']];
     DATA.blocks.forEach((b) => {
       b.tasks.forEach((t) => {
         const base = [DATA.pid, DATA.combo, b.cond, t.key];
@@ -549,6 +552,9 @@
       return;
     }
     DATA.basic = { student: consent.student, etl: consent.etl };
+    // 실험 중 실수로 창을 닫거나 사이트를 벗어나려 하면 브라우저가 한 번 물어봐요.
+    let leaveGuard = true;
+    window.addEventListener('beforeunload', (e) => { if (!leaveGuard || review) return; e.preventDefault(); e.returnValue = ''; });
     await assign();
 
     await etlPage({
@@ -581,13 +587,14 @@
     etlEnd({ step: 5, title: '응답을 저장하고 있습니다', body: '<p>창을 닫지 말고 잠시만 기다려 주세요.</p>' });
     const files = buildFiles();
     const saved = await saveAll(files);
+    leaveGuard = !saved;
 
     etlEnd({
       step: 5,
       title: '참여해 주셔서 감사합니다',
       body: `<p><b>[이 실험에 대해 알려 드립니다]</b></p>
         <p>화면의 과목, 과제, 공지는 모두 가상이고, 이 화면은 서울대학교 공식 eTL이 아닌 연구용 시제품입니다.</p>
-        <p><b>AI 과제 코치의 안내는 실제 AI가 만든 것이 아니라 연구진이 미리 작성한 내용입니다.</b> 실제 AI가 있다고 가정했을 때 사람들이 어떻게 쓰는지 보기 위해 이렇게 만들었습니다.</p>
+        <p><b>AI 과제 코치의 안내는 실제 AI가 만든 것이 아니라 연구자들이 미리 작성한 내용입니다.</b> 실제 AI가 있다고 가정했을 때 사람들이 어떻게 쓰는지 보기 위해 이렇게 만들었습니다.</p>
         <div class="gap"></div>
         ${saved ? '<p><b>응답이 저장되었습니다.</b> 이제 창을 닫으셔도 됩니다.</p>' : `<div class="q is-missing"><p><b>응답을 저장하지 못했습니다.</b> 창을 닫기 전에 아래 버튼으로 파일을 내려받아, 모집 안내의 연락처로 보내 주세요. 파일에 이름이나 학번은 들어 있지 않습니다.</p><button class="xp-btn" type="button" data-backup>응답 파일 내려받기</button></div>`}
         ${pilot ? `<p><b>예비 실험 소요 시간:</b> ${Math.floor(DATA.totalSec / 60)}분 ${DATA.totalSec % 60}초</p>` : ''}

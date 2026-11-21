@@ -132,7 +132,7 @@
       <span class="xp-nav__text" style="top:${textTop}px">${esc(label)}</span></a></li>`).join('');
     const menu = STEPS.map((s, i) => `<li class="${i === step ? 'on' : ''} ${i > step ? 'later' : ''}">${esc(s)}</li>`).join('');
     return `<div class="xp">
-      <aside class="xp-nav"><div class="xp-nav__mark"><div class="xp-nav__seal">연구용<br>시제품</div></div><ul>${nav}</ul></aside>
+      <aside class="xp-nav"><div class="xp-nav__mark"><div class="xp-nav__seal">연구용<br>시제품</div></div><ul>${nav}</ul><a href="#" class="xp-nav__collapse" data-off aria-label="메뉴 접기">${icons.collapse || ''}</a></aside>
       <main class="xp-main">
         <div class="xp-crumbs"><span class="xp-crumbs__bars"><b></b><b></b><b></b></span><a href="#" data-off>2026-2 과제 관리 화면 실험</a><i>›</i><span>${esc(STEPS[step])}</span></div>
         <div class="xp-body">
@@ -146,6 +146,7 @@
         </div>
       </main>
       <div class="xp-help" data-off>도<br>움<br>말</div>
+      <div class="xp-help-more" data-off><i></i><i></i><i></i></div>
       <div class="xp-toast" role="status"></div>
     </div>`;
   };

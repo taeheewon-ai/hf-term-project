@@ -91,5 +91,9 @@
 .xp-foot { display: flex; justify-content: flex-end; align-items: center; height: 65px; margin-top: 34px; border-top: .8px solid var(--e-line); }
 
 .xp-help { position: fixed; right: 0; top: 342px; z-index: 9; width: 23px; height: 72px; display: flex; align-items: center; justify-content: center; text-align: center; border-radius: 10px 0 0 10px; background: #4b63ce; color: #fff; font: 400 12px/14px var(--e-kr); }
+.xp-help-more { position: fixed; right: 0; top: 414px; z-index: 9; width: 23px; height: 72px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: #fff; border: 1.5px solid #1b8fb5; border-right: 0; border-radius: 7px 0 0 7px; }
+.xp-help-more i { width: 4px; height: 4px; border-radius: 50%; background: #1b8fb5; }
+.xp-nav__collapse { flex: none; width: 84px; height: 50px; display: flex; align-items: center; justify-content: center; }
+.xp-nav__collapse svg { width: 26px; height: 32px; fill: #fff; transform: scaleX(-1); }
 .xp-toast { position: fixed; left: 50%; top: 14px; z-index: 20; transform: translateX(-50%); padding: 9px 16px; border-radius: 4px; background: #2d3b45; color: #fff; font: 400 14px/20px var(--e-kr); opacity: 0; pointer-events: none; transition: opacity .15s; }
 .xp-toast.show { opacity: 1; }

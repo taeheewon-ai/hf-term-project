@@ -2,6 +2,8 @@
 (() => {
   const params = new URLSearchParams(location.search);
   const review = params.get('review') === '1';
+  // 조원 예비 실험용 링크(?pilot=1). 저장은 되지만 파일 이름이 PILOT로 시작하고, 참가자 배정 순서를 쓰지 않아요.
+  const pilot = params.get('pilot') === '1';
   // 네 조합. 4명마다 네 조합이 한 번씩 나오게 섞은 24칸이라, 모집을 어디서 멈춰도 인원이 거의 같아요.
   const COMBOS = [['A', 'X', 'B', 'Y'], ['A', 'Y', 'B', 'X'], ['B', 'X', 'A', 'Y'], ['B', 'Y', 'A', 'X']];
   const SLOTS = [0, 3, 1, 2, 0, 2, 3, 1, 1, 3, 0, 2, 2, 0, 1, 3, 2, 1, 0, 3, 0, 1, 3, 2];
@@ -9,7 +11,7 @@
   const comboParam = params.get('combo');
   const makeCode = () => {
     const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    return `R${[...crypto.getRandomValues(new Uint8Array(8))].map((x) => A[x % A.length]).join('')}`;
+    return `${pilot ? 'PILOT' : 'R'}${[...crypto.getRandomValues(new Uint8Array(8))].map((x) => A[x % A.length]).join('')}`;
   };
   const DATA = { pid: makeCode(), combo: '', comboIndex: null, slot: null, assignedBy: '', basic: null, blocks: [], final: null };
   let BLOCKS = [];
@@ -411,10 +413,11 @@
   async function assign() {
     if (comboParam !== null) {
       setCombo(Math.min(3, Math.max(0, parseInt(comboParam, 10) || 0)));
-      DATA.assignedBy = 'link';
+      DATA.assignedBy = pilot ? 'pilot' : 'link';
       return;
     }
     if (review) { setCombo(0); DATA.assignedBy = 'review'; return; }
+    if (pilot) { setCombo(crypto.getRandomValues(new Uint8Array(1))[0] % 4); DATA.assignedBy = 'pilot'; return; }
     try {
       const res = await fetch(`${CFG.endpoint}/condition/`, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: '*/*' }, body: JSON.stringify({ experimentID: CFG.experimentID }) });
       const json = await res.json();
@@ -504,6 +507,7 @@
       return;
     }
 
+    const startedAt = performance.now();
     await etlPage({
       step: 0,
       title: '과제 관리 화면 사용성 실험',
@@ -571,6 +575,7 @@
       go: '제출하고 마치기'
     });
     DATA.final = final;
+    DATA.totalSec = Math.round((performance.now() - startedAt) / 1000);
 
     etlEnd({ step: 5, title: '응답을 저장하고 있습니다', body: '<p>창을 닫지 말고 잠시만 기다려 주세요.</p>' });
     const files = buildFiles();
@@ -584,6 +589,7 @@
         <p><b>AI 과제 코치의 안내는 실제 AI가 만든 것이 아니라 연구진이 미리 작성한 내용입니다.</b> 실제 AI가 있다고 가정했을 때 사람들이 어떻게 쓰는지 보기 위해 이렇게 만들었습니다.</p>
         <div class="gap"></div>
         ${saved ? '<p><b>응답이 저장되었습니다.</b> 이제 창을 닫으셔도 됩니다.</p>' : `<div class="q is-missing"><p><b>응답을 저장하지 못했습니다.</b> 창을 닫기 전에 아래 버튼으로 파일을 내려받아, 모집 안내의 연락처로 보내 주세요. 파일에 이름이나 학번은 들어 있지 않습니다.</p><button class="xp-btn" type="button" data-backup>응답 파일 내려받기</button></div>`}
+        ${pilot ? `<p><b>예비 실험 소요 시간:</b> ${Math.floor(DATA.totalSec / 60)}분 ${DATA.totalSec % 60}초</p>` : ''}
         ${review ? summaryHTML() : ''}`
     });
     if (!saved) pageEl.querySelector('[data-backup]').addEventListener('click', () => downloadBackup(files));

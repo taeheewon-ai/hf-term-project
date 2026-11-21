@@ -326,6 +326,66 @@
   /* ---------- 글·설문 화면 ---------- */
   // 휴대폰 안내처럼 eTL 틀이 들어가지 않는 좁은 화면용
   const endPage = (html) => { showPage(); frame.src = 'about:blank'; pageEl.innerHTML = `<div class="sheet">${html}</div>`; pageEl.scrollTop = 0; };
+  // 휴대폰으로 들어왔을 때 보는 화면. eTL 모바일 모양으로 보여 주고, PC로 옮길 링크를 바로 복사할 수 있어요.
+  const phonePage = () => {
+    showPage();
+    frame.src = 'about:blank';
+    pageEl.className = 'page page--etl';
+    const link = location.href.split('#')[0];
+    pageEl.innerHTML = `<div class="xm">
+      <header class="xm-top">
+        <button class="xm-bars" type="button" data-off aria-label="메뉴"><b></b><b></b><b></b></button>
+        <span class="xm-top__title">2026-2 과제 관리 화면 실험</span>
+        <span class="xm-seal">연구용<br>시제품</span>
+      </header>
+      <div class="xm-crumbs"><a href="#" data-off>과목</a><i>›</i><span>실험 안내</span></div>
+      <div class="xm-body">
+        <h1>PC에서 참여해 주세요</h1>
+        <ul class="xm-over">
+          <li><b>소요 시간</b><span>약 15분</span></li>
+          <li><b>참여 기기</b><span>노트북·데스크톱</span></li>
+          <li><b>제출물 유형</b><span>온라인 응답</span></li>
+        </ul>
+        <p>과제 화면을 넓게 보면서 진행하는 실험이라, PC 브라우저 창을 넓게 열어야 참여할 수 있어요.</p>
+        <p class="xm-label">[참여 방법]</p>
+        <ol>
+          <li>아래 버튼으로 실험 링크를 복사해요.</li>
+          <li>카카오톡 나에게 보내기 등으로 PC에 옮겨요.</li>
+          <li>PC 브라우저에서 링크를 열면 바로 시작돼요.</li>
+        </ol>
+        <div class="xm-link" data-link>${esc(link)}</div>
+        <button class="xm-copy" type="button" data-copy>링크 복사</button>
+        <p class="xm-fine">이 화면은 서울대학교 공식 eTL이 아닌 수업 프로젝트용 연구 시제품입니다. 로그인 정보를 입력받지 않습니다.</p>
+      </div>
+      <div class="xp-toast" role="status"></div>
+    </div>`;
+    pageEl.scrollTop = 0;
+    const toast = pageEl.querySelector('.xp-toast');
+    const copyBtn = pageEl.querySelector('[data-copy]');
+    let timer;
+    const say = (text) => {
+      toast.textContent = text;
+      toast.classList.add('show');
+      clearTimeout(timer);
+      timer = setTimeout(() => { toast.classList.remove('show'); copyBtn.textContent = '링크 복사'; }, 1800);
+    };
+    pageEl.onclick = async (e) => {
+      if (e.target.closest('[data-off]')) { e.preventDefault(); say(OFF_MENU); return; }
+      if (!e.target.closest('[data-copy]')) return;
+      try {
+        await navigator.clipboard.writeText(link);
+        copyBtn.textContent = '복사했어요';
+        say('링크를 복사했어요. PC에서 열어 주세요.');
+      } catch (err) {
+        const range = document.createRange();
+        range.selectNodeContents(pageEl.querySelector('[data-link]'));
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        say('링크를 길게 눌러 복사해 주세요.');
+      }
+    };
+  };
 
   const q = (name, title, body, desc = '', required = true) => `<div class="xq" id="q-${name}" data-name="${name}" ${required ? `data-req="${name}"` : ''} role="group" aria-labelledby="t-${name}">
     <div class="xq__head"><b class="xq__no">문제</b>${required ? '' : '<span>선택</span>'}</div>
@@ -503,7 +563,7 @@
 
   async function main() {
     if (!review && (window.innerWidth < 1024 || matchMedia('(pointer: coarse)').matches)) {
-      endPage('<h1>PC로 접속해 주세요.</h1><p>이 실험은 노트북이나 데스크톱의 브라우저에서만 진행할 수 있어요. 같은 링크를 PC에서 열어 주세요.</p>');
+      phonePage();
       return;
     }
     if (!review && !CFG.experimentID) {

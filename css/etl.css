@@ -228,3 +228,15 @@ a.brow:hover { background: #f8f9fa; }
 .review a { padding: 6px 16px; border-radius: 999px; color: #d1d5db; font: 700 13px/18px var(--pretendard); }
 .review a.on { background: #fff; color: #111827; }
 .is-loading .ccontent, .is-loading .main > :not(.head) { visibility: hidden; }
+
+/* 누르자마자 보이는 반응 (전환 시간은 그대로, A·B 동일) */
+a:active, button:active { opacity: .7; }
+a.is-pressed { opacity: .55; }
+html.is-nav, html.is-nav * { cursor: progress !important; }
+html.is-nav::before { content: ""; position: fixed; z-index: 70; top: 0; left: 0; right: 0; height: 3px; background: var(--link); transform-origin: left; pointer-events: none; animation: nav-progress 1.1s ease-out forwards; }
+@keyframes nav-progress { from { transform: scaleX(.08); } to { transform: scaleX(.92); } }
+
+/* 글자 높이뿐이던 작은 링크의 눌리는 범위를 넓혀요 (보이는 모양은 그대로) */
+.row__title, .coach a, .todo a, .plan li a { position: relative; }
+.row__title::before, .coach a::before, .todo a::before, .plan li a::before { content: ""; position: absolute; inset: -4px -3px; }
+.todo a:hover { text-decoration: underline; }

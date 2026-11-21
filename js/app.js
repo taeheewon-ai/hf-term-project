@@ -346,14 +346,19 @@
     const instant = !paced || shownKey === null || key === shownKey;
     shownKey = key;
     if (changed) post({ type: 'nav', key: key || 'dashboard' });
-    if (instant) { root.classList.remove('is-loading'); paint(parts, isCourse); return; }
+    const page = document.documentElement;
+    if (instant) { page.classList.remove('is-nav'); root.classList.remove('is-loading'); paint(parts, isCourse); return; }
     waitFrom = performance.now();
+    // 전환 시간은 그대로 두고, 누르자마자 '불러오는 중'이 보이게 해요. A·B 똑같아요.
+    page.classList.remove('is-nav');
+    void page.offsetWidth;
+    page.classList.add('is-nav');
     const [frameAt, contentAt] = paceOf(isCourse, parts.slice(2));
     setTimeout(() => {
       if (token !== navToken) return;
       root.classList.add('is-loading');
       paint(parts, isCourse);
-      setTimeout(() => { if (token === navToken) { root.classList.remove('is-loading'); endWait(); } }, contentAt - frameAt);
+      setTimeout(() => { if (token === navToken) { page.classList.remove('is-nav'); root.classList.remove('is-loading'); endWait(); } }, contentAt - frameAt);
     }, frameAt);
   }
   function paint(parts, isCourse) {
@@ -388,7 +393,11 @@
   // 클릭 수: 링크·버튼·메뉴처럼 누를 수 있는 것을 누른 횟수
   document.addEventListener('click', (e) => {
     const hit = e.target.closest('a, button, input, [data-toast], [data-tray], [data-menu-toggle]');
-    if (hit) post({ type: 'click', coach: !!hit.closest('.coach, .coach-banner') });
+    if (!hit) return;
+    // 화면이 뜨기를 기다리며 같은 링크를 또 누른 것은 클릭 수에 넣지 않아요.
+    if (waitFrom !== null && hit.hash && hit.hash === location.hash) return;
+    if (hit.matches('a[href^="#/"]') && hit.hash !== location.hash) hit.classList.add('is-pressed');
+    post({ type: 'click', coach: !!hit.closest('.coach, .coach-banner') });
   }, true);
   document.addEventListener('click', (e) => {
     const tr = document.getElementById('tray');

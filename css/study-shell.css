@@ -125,3 +125,4 @@
 .xp-nav__collapse svg { width: 26px; height: 32px; fill: #fff; transform: scaleX(-1); }
 .xp-toast { position: fixed; left: 50%; top: 14px; z-index: 20; transform: translateX(-50%); padding: 9px 16px; border-radius: 4px; background: #2d3b45; color: #fff; font: 400 14px/20px var(--e-kr); opacity: 0; pointer-events: none; transition: opacity .15s; }
 .xp-toast.show { opacity: 1; }
+.debrief-key { color: #b42318 !important; }

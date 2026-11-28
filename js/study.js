@@ -539,6 +539,10 @@
   };
 
   async function main() {
+    if (!review && CFG.closed) {
+      endPage('<h1>실험이 끝났어요.</h1><p>모집 인원이 모두 차서 더 이상 응답을 받지 않습니다. 관심 가져 주셔서 감사합니다.</p>');
+      return;
+    }
     if (!review && (window.innerWidth < 1024 || matchMedia('(pointer: coarse)').matches)) {
       phonePage();
       return;
